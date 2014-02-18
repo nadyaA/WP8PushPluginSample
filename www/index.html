@@ -1,0 +1,113 @@
+﻿<!DOCTYPE html>
+<!--
+       Licensed to the Apache Software Foundation (ASF) under one
+       or more contributor license agreements.  See the NOTICE file
+       distributed with this work for additional information
+       regarding copyright ownership.  The ASF licenses this file
+       to you under the Apache License, Version 2.0 (the
+       "License"); you may not use this file except in compliance
+       with the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+       Unless required by applicable law or agreed to in writing,
+       software distributed under the License is distributed on an
+       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+       KIND, either express or implied.  See the License for the
+       specific language governing permissions and limitations
+       under the License.
+-->
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta name="format-detection" content="telephone=no" />
+	<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+	<link rel="stylesheet" type="text/css" href="css/index.css" />
+	<title>Hello World of Push Notifications</title>
+
+	<script src="http://code.jquery.com/jquery-1.11.0.min.js" type="text/javascript"></script>
+	<script src="cordova.js" type="text/javascript"></script>
+	
+
+	<script type="text/javascript">
+		var pushNotification;
+
+		function onDeviceReady() {
+			$("#app-status-ul").append('<li>deviceready event received</li>');
+
+			document.addEventListener("backbutton", function (e) {
+				$("#app-status-ul").append('<li>backbutton event received</li>');
+
+				if ($("#home").length > 0) {
+					// call this to get a new token each time. don't call it to reuse existing token.
+					//pushNotification.unregister(successHandler, errorHandler);
+					e.preventDefault();
+					navigator.app.exitApp();
+				}
+				else {
+					navigator.app.backHistory();
+				}
+			}, false);
+
+			try {
+				pushNotification = window.plugins.pushNotification;
+				$("#app-status-ul").append('<li>registering WP8</li>');
+				pushNotification.register(channelHandler, errorHandler,
+					{
+						"channelName": "PushSampleChannel", "ecb": "onNotificationWP8"
+					});	// required!
+			}
+			catch (err) {
+				txt = "There was an error on this page.\n\n";
+				txt += "Error description: " + err.message + "\n\n";
+				alert(txt);
+			}
+		}
+
+		//handle MPNS notifications for WP8
+		function onNotificationWP8(e) {
+
+			if (e.type == "toast" && e.jsonContent) {
+				pushNotification.showToastNotification(successHandler, errorHandler,
+					{
+						"Title": e.jsonContent["wp:Text1"], "Subtitle": e.jsonContent["wp:Text2"], "NavigationUri": e.jsonContent["wp:Param"]
+					});
+			}
+
+			if (e.type == "raw" && e.jsonContent) {
+				pushNotification.showRawNotification(successHandler, errorHandler, e.jsonContent.Body);
+			}
+		}
+
+		function channelHandler(result) {
+
+			console.log("chanel that has opened" + ': ' + result.channel);
+			console.log("chanel uri" + ': ' + result.uri);
+
+			$("#app-status-ul").append('<li>chanel that has opened: <span>' + result.channel + '</span></li>');
+			$("#app-status-ul").append('<li>chanel Uri: <span>' + result.uri + '</span></li>');
+		}
+
+		function successHandler(result) {
+			$("#app-status-ul").append('<li>success:' + result + '</li>');
+		}
+
+		function errorHandler(error) {
+			$("#app-status-ul").append('<li>error:' + error + '</li>');
+		}
+
+		document.addEventListener('deviceready', onDeviceReady, true);
+
+	</script>
+
+</head>
+<body>
+	<div id="home" class="app">
+		<div id="app-status-div">
+			<h1>Cordova Push Notification Plugin Demo</h1>
+			<ul id="app-status-ul">
+			</ul>
+		</div>
+	</div>
+</body>
+</html>

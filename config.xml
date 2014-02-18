@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget>
+    <access origin="*" />
+    <feature name="PushPlugin">
+        <param name="wp-package" value="PushPlugin" />
+    </feature>
+</widget>
